@@ -133,13 +133,13 @@ def test(model, test_inputs, test_labels):
     for i in range(int(len(test_inputs1)/model.window_size/2)):
         test_inputs1[i] = test_inputs1[i*2*model.window_size:i*2*model.window_size+model.window_size]
         test_labels1[i] = test_labels1[i*2*model.window_size+model.window_size:i*2*model.window_size+2*model.window_size]
-    test_inputs1 = np.reshape(test_inputs1,-1)
-    test_labels1 = np.reshape(test_labels1,-1)
+    # test_inputs1 = np.reshape(test_inputs1,-1)
+    # test_labels1 = np.reshape(test_labels1,-1)
 
     sum = 0
     for i in range(int(len(test_inputs1)/model.batch_size)):
         with tf.GradientTape() as tape:
-            logits=model.call(test_inputs1[i*model.batch_size:(i+1)*model.batch_size],None)
+            logits,final_memory_state = model.call(test_inputs1[i*model.batch_size:(i+1)*model.batch_size],None)
             losses=model.loss(logits,test_labels1[i*model.batch_size:(i+1)*model.batch_size])
             sum += losses
         
