@@ -89,13 +89,13 @@ def train(model, train_inputs, train_labels):
     print('train')
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
-    train_inputs1 = np.zeros((int(len(train_inputs)/model.window_size/2),model.window_size),dtype=np.int32)
-    train_labels1 = np.zeros((int(len(train_labels)/model.window_size/2),model.window_size),dtype=np.int32)
-    print(train_inputs1.shape)
-    print('train_inputs',train_inputs.shape)
-    for i in range(int(len(train_inputs)/model.window_size/2)):
-        train_inputs1[i] = train_inputs[i*2*model.window_size:i*2*model.window_size+model.window_size]
-        train_labels1[i] = train_labels[i*2*model.window_size+model.window_size:i*2*model.window_size+2*model.window_size]
+    train_inputs1 = np.zeros((int(len(train_inputs)/model.window_size)-1,model.window_size),dtype=np.int32)
+    train_labels1 = np.zeros((int(len(train_labels)/model.window_size)-1,model.window_size),dtype=np.int32)
+    # print(train_inputs1.shape)
+    # print('train_inputs',train_inputs.shape)
+    for i in range(int(len(train_inputs)/model.window_size)-1):
+        train_inputs1[i] = train_inputs[i*model.window_size:i*model.window_size+model.window_size]
+        train_labels1[i] = train_labels[i*model.window_size+1:i*model.window_size+model.window_size+1]
     # train_inputs1 = np.reshape(train_inputs1,-1)
     # train_labels1 = np.reshape(train_labels1,-1)
 
@@ -131,11 +131,12 @@ def test(model, test_inputs, test_labels):
     
     #TODO: Fill in
     #NOTE: Ensure a correct perplexity formula (different from raw loss)
-    test_inputs1 = np.zeros((int(len(test_inputs)/model.window_size/2),model.window_size),dtype=np.int32)
-    test_labels1 = np.zeros((int(len(test_labels)/model.window_size/2),model.window_size),dtype=np.int32)
-    for i in range(int(len(test_inputs)/model.window_size/2)):
-        test_inputs1[i] = test_inputs[i*2*model.window_size:i*2*model.window_size+model.window_size]
-        test_labels1[i] = test_labels[i*2*model.window_size+model.window_size:i*2*model.window_size+2*model.window_size]
+    test_inputs1 = np.zeros((int(len(test_inputs)/model.window_size)-1,model.window_size),dtype=np.int32)
+    test_labels1 = np.zeros((int(len(test_labels)/model.window_size)-1,model.window_size),dtype=np.int32)
+    for i in range(int(len(test_inputs)/model.window_size)-1):
+        test_inputs1[i] = test_inputs[i*model.window_size:i*model.window_size+model.window_size]
+        test_labels1[i] = test_labels[i*model.window_size+1:i*model.window_size+model.window_size+1]
+        # print(test_labels1[i].shape)
     sum = 0
     for i in range(int(len(test_inputs1)/model.batch_size)):
         # print(i)
