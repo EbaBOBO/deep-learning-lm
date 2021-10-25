@@ -58,7 +58,7 @@ class Model(tf.keras.Model):
         """
         #TODO: Fill in
 
-        return tf.reduce_mean(tf.keras.metrics.sparse_categorical_crossentropy(labels, probs, from_logits=True, axis=-1))
+        return tf.reduce_mean(tf.keras.metrics.sparse_categorical_crossentropy(labels, probs))
         # return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels, probs))
         pass
 
