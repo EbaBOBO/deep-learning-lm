@@ -46,6 +46,7 @@ def get_data(train_file, test_file):
     test = np.array(test)
 
     return train,test,word2id
+    pass
 
 # get_data('/Users/zccc/1470projects/data/train.txt','/Users/zccc/1470projects/data/test.txt')
 

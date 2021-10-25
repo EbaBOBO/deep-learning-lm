@@ -46,6 +46,7 @@ class Model(tf.keras.Model):
         logits2 = tf.add(tf.matmul(logits1,self.W2),self.b2)  #[batch_size,1000]
         logits3 = tf.add(tf.matmul(logits2,self.W3),self.b3)    #[batch_size,vocab_size]
         return logits3
+        pass
 
     def loss_function(self, probs, labels):
         """
@@ -60,7 +61,7 @@ class Model(tf.keras.Model):
 
         return tf.reduce_mean(tf.keras.metrics.sparse_categorical_crossentropy(labels, probs, from_logits=True, axis=-1))
         # return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels, probs))
-
+        pass
 
 
 def train(model, train_input, train_labels):
@@ -95,7 +96,7 @@ def train(model, train_input, train_labels):
         gradients = tape.gradient(losses, model.trainable_variables)
         # print(gradients)
         optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-
+    pass
 
 
 def test(model, test_input, test_labels):
@@ -124,7 +125,7 @@ def test(model, test_input, test_labels):
         # print(gradients)
 
     return perplexity
-
+    pass
 
 def generate_sentence(word1, word2, length, vocab, model):
     """
@@ -184,6 +185,6 @@ def main():
     # Print out perplexity 
     
     # BONUS: Try printing out sentences with different starting words  
-    # pass
+    pass
 if __name__ == '__main__':
     main()
