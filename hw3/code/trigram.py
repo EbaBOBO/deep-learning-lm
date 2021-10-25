@@ -15,7 +15,6 @@ class Model(tf.keras.Model):
 
         super(Model, self).__init__()
 
-        # TODO: initialize vocab_size, embedding_size
 
         self.vocab_size = vocab_size
         self.embedding_size = 30 #TODO
@@ -111,8 +110,6 @@ def test(model, test_input, test_labels):
     
     #TODO: Fill in
     #NOTE: Ensure a correct perplexity formula (different from raw loss)
-    # logits = model.call(test_input)
-    # accu = model.accuracy(logits,test_labels)
     sum = 0
     for i in range(int(len(test_input)/model.batch_size)):
 # Implement backprop:
@@ -125,7 +122,8 @@ def test(model, test_input, test_labels):
         # print(gradients)
 
     return perplexity
-    pass
+    pass  
+
 
 def generate_sentence(word1, word2, length, vocab, model):
     """
@@ -155,7 +153,6 @@ def generate_sentence(word1, word2, length, vocab, model):
 
 
 def main():
-    # TODO: Pre-process and vectorize the data using get_data from preprocess
     train1,test1,word2id = get_data('/Users/zccc/1470projects/data/train.txt','/Users/zccc/1470projects/data/test.txt')
     # print(train1.shape) #(1465614,)
     # print(test1.shape) #(361912,)
@@ -184,7 +181,8 @@ def main():
     print('perplexity is: ',perplexity)
     # Print out perplexity 
     
-    # BONUS: Try printing out sentences with different starting words  
+    # BONUS: Try printing out sentences with different starting words   
     pass
+
 if __name__ == '__main__':
     main()

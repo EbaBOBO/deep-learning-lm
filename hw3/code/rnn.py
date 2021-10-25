@@ -139,7 +139,7 @@ def main():
     # Print out perplexity 
 
     # BONUS: Try printing out various sentences with different start words and sample_n parameters 
-    
+    pass
 
 if __name__ == '__main__':
     main()

@@ -14,6 +14,16 @@ def get_data(train_file, test_file):
     :return: Tuple of train (1-d list or array with training words in vectorized/id form), test (1-d list or array with testing words in vectorized/id form), vocabulary (Dict containg index->word mapping)
     """
     # TODO: load and concatenate training data from training file.
+
+    # TODO: load and concatenate testing data from testing file.
+
+    # TODO: read in and tokenize training data
+
+    # TODO: read in and tokenize testing data
+
+    # BONUS: Ensure that all words appearing in test also appear in train
+
+    # TODO: return tuple of training tokens, testing tokens, and the vocab dictionary.
     with open(train_file, "r") as f1:  
         data1 = f1.readlines() 
         vocab1 = set("".join(data1).split()) # collects all unique words in our dataset (vocab)
@@ -47,6 +57,3 @@ def get_data(train_file, test_file):
 
     return train,test,word2id
     pass
-
-# get_data('/Users/zccc/1470projects/data/train.txt','/Users/zccc/1470projects/data/test.txt')
-
