@@ -27,8 +27,8 @@ class Model(tf.keras.Model):
         # - and use tf.keras.layers.GRU or tf.keras.layers.LSTM for your RNN 
         self.E = tf.Variable(tf.random.truncated_normal([self.vocab_size,self.embedding_size], stddev=0.1))
         self.LSTM = tf.keras.layers.LSTM(100,return_sequences=True, return_state=True)
-        self.dense_layer1 = tf.keras.layers.Dense(1000)
-        self.dense_layer2 = tf.keras.layers.Dense(2000)
+        self.dense_layer1 = tf.keras.layers.Dense(100)
+        self.dense_layer2 = tf.keras.layers.Dense(1000)
         self.dense_layer3 = tf.keras.layers.Dense(self.vocab_size)
     def call(self, inputs, initial_state):
         """
@@ -104,12 +104,13 @@ def train(model, train_inputs, train_labels):
     train_inputs2=tf.gather(train_inputs1,index,axis=0)
     train_labels2=tf.gather(train_labels1,index,axis=0)
 
-    for i in range(int(len(train_inputs)/model.batch_size)):
+    for i in range(int(len(train_inputs2)/model.batch_size)):
   # Implement backprop:
         with tf.GradientTape() as tape:
             probs,final_memory_state=model.call(train_inputs2[i*model.batch_size:(i+1)*model.batch_size],None)
             # print('train probs',probs.shape)
             losses=model.loss(probs,train_labels2[i*model.batch_size:(i+1)*model.batch_size])
+
  
         gradients = tape.gradient(losses, model.trainable_variables)
         # print(gradients)
@@ -131,27 +132,22 @@ def test(model, test_inputs, test_labels):
     #TODO: Fill in
     #NOTE: Ensure a correct perplexity formula (different from raw loss)
     test_inputs1 = np.zeros((int(len(test_inputs)/model.window_size/2),model.window_size),dtype=np.int32)
-    # print(test_inputs1.shape)
-    # print('test_inputs',test_inputs.shape)
-    # print(test_inputs1[1*2*model.window_size:1*2*model.window_size+model.window_size].shape)
-    # print(int(len(test_inputs1)/model.window_size/2))
     test_labels1 = np.zeros((int(len(test_labels)/model.window_size/2),model.window_size),dtype=np.int32)
     for i in range(int(len(test_inputs)/model.window_size/2)):
         test_inputs1[i] = test_inputs[i*2*model.window_size:i*2*model.window_size+model.window_size]
         test_labels1[i] = test_labels[i*2*model.window_size+model.window_size:i*2*model.window_size+2*model.window_size]
-    # test_inputs1 = np.reshape(test_inputs1,-1)
-    # test_labels1 = np.reshape(test_labels1,-1)
-
     sum = 0
-    for i in range(int(len(test_inputs)/model.batch_size)):
-        print(i)
+    for i in range(int(len(test_inputs1)/model.batch_size)):
+        # print(i)
         with tf.GradientTape() as tape:
             logits,final_memory_state = model.call(test_inputs1[i*model.batch_size:(i+1)*model.batch_size],None)
+            # print('logits ',logits) #(100,20,4962)
             losses=model.loss(logits,test_labels1[i*model.batch_size:(i+1)*model.batch_size])
+            # print('losses:',losses)
             sum += losses
         
-    perplexity = tf.exp(sum/int(len(test_inputs)/model.batch_size))
-    # print(perplexity.shape)
+    perplexity = np.exp(sum/int(len(test_inputs1)/model.batch_size))
+    # print('perplexity is:',perplexity)
 
     return perplexity
     pass  
@@ -197,33 +193,7 @@ def main():
     
     # TO-DO:  Separate your train and test data into inputs and labels
 
-    # TODO: initialize model
-
-    # TODO: Set-up the training step
-
-    # TODO: Set up the testing steps
-
-    # Print out perplexity 
-
-    # BONUS: Try printing out various sentences with different start words and sample_n parameters 
     train1,test1,word2id = get_data('/Users/zccc/1470projects/data/train.txt','/Users/zccc/1470projects/data/test.txt')
-    # print(train1.shape) #(1465614,)
-    # print(test1.shape) #(361912,)
-
-    # TO-DO:  Separate your train and test data into inputs and labels
-    # train_input = np.zeros((int(len(train1)/3),2),dtype=np.int32)
-    # train_labels = np.zeros((int(len(train1)/3),),dtype=np.int32)
-    # for i in range(int(len(train1)/3)):
-    #     train_input[i] = train1[i*3:i*3+2]
-    #     train_labels[i] = train1[i*3+2]
-    # print(train_input.shape) #(488538, 2)
-
-    # test_input = np.zeros((int(len(test1)/3),2))
-    # test_labels = np.zeros((int(len(test1)/3),))
-    # for i in range(int(len(test1)/3)):
-    #     test_input[i] = test1[i*3:i*3+2]
-    #     test_labels[i] = test1[i*3+2]
-    # print(test_input.shape) #(120637, 2)
     # TODO: initialize model
     obj = Model(len(word2id))
 
