@@ -95,7 +95,7 @@ def train(model, train_inputs, train_labels):
     # print('train_inputs',train_inputs.shape)
     for i in range(int(len(train_inputs)/model.window_size)-1):
         train_inputs1[i] = train_inputs[i*model.window_size:i*model.window_size+model.window_size]
-        train_labels1[i] = train_labels[i*model.window_size+1:i*model.window_size+model.window_size+1]
+        train_labels1[i] = train_inputs[i*model.window_size+1:i*model.window_size+model.window_size+1]
     # train_inputs1 = np.reshape(train_inputs1,-1)
     # train_labels1 = np.reshape(train_labels1,-1)
 
@@ -135,7 +135,7 @@ def test(model, test_inputs, test_labels):
     test_labels1 = np.zeros((int(len(test_labels)/model.window_size)-1,model.window_size),dtype=np.int32)
     for i in range(int(len(test_inputs)/model.window_size)-1):
         test_inputs1[i] = test_inputs[i*model.window_size:i*model.window_size+model.window_size]
-        test_labels1[i] = test_labels[i*model.window_size+1:i*model.window_size+model.window_size+1]
+        test_labels1[i] = test_inputs[i*model.window_size+1:i*model.window_size+model.window_size+1]
         # print(test_labels1[i].shape)
     sum = 0
     for i in range(int(len(test_inputs1)/model.batch_size)):
@@ -199,7 +199,7 @@ def main():
     obj = Model(len(word2id))
 
     # TODO: Set-up the training step
-    train(obj,train1,train1)
+    # train(obj,train1,train1)
     # TODO: Set up the testing steps
     perplexity = test(obj,test1,test1)
     print('perplexity is: ',perplexity)
