@@ -18,14 +18,18 @@ class Model(tf.keras.Model):
 
         self.vocab_size = vocab_size
         self.window_size = 20 # DO NOT CHANGE!
-        self.embedding_size = _ #TODO
-        self.batch_size = _ #TODO 
+        self.embedding_size = 30 #TODO
+        self.batch_size = 100 #TODO 
 
         # TODO: initialize embeddings and forward pass weights (weights, biases)
         # Note: You can now use tf.keras.layers!
         # - use tf.keras.layers.Dense for feed forward layers: https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dense
         # - and use tf.keras.layers.GRU or tf.keras.layers.LSTM for your RNN 
-
+        self.E = tf.Variable(tf.random.truncated_normal([self.vocab_size,self.embedding_size], stddev=0.1))
+        self.LSTM = tf.keras.layers.LSTM(100,return_sequences=True, return_state=True)
+        self.dense_layer1 = tf.keras.layers.Dense(100)
+        self.dense_layer2 = tf.keras.layers.Dense(1000)
+        self.dense_layer3 = tf.keras.layers.Dense(self.vocab_size)
     def call(self, inputs, initial_state):
         """
         - You must use an embedding layer as the first layer of your network (i.e. tf.nn.embedding_lookup)
@@ -39,8 +43,16 @@ class Model(tf.keras.Model):
         """
         
         #TODO: Fill in 
-        
-        return None,None
+        # print(inputs.shape)
+        embedding = tf.nn.embedding_lookup(self.E, inputs, max_norm=None, name=None)
+        output1, final_memory_state, final_carry_state = self.LSTM(embedding)
+        logits1 = self.dense_layer1(output1)
+        logits2 = self.dense_layer2(logits1)
+        logits3 = self.dense_layer3(logits2)
+        probs = tf.nn.softmax(logits3)
+        print('probs',probs.shape)
+
+        return probs,final_memory_state
 
     def loss(self, probs, labels):
         """
@@ -56,8 +68,12 @@ class Model(tf.keras.Model):
         #TODO: Fill in
         #We recommend using tf.keras.losses.sparse_categorical_crossentropy
         #https://www.tensorflow.org/api_docs/python/tf/keras/losses/sparse_categorical_crossentropy
+        # print('labels:',labels.shape)
+        # print(probs.shape)
+    
+        return tf.reduce_mean(tf.keras.metrics.sparse_categorical_crossentropy(labels, probs))
 
-        return None
+        # return None
 
 
 def train(model, train_inputs, train_labels):
@@ -70,6 +86,32 @@ def train(model, train_inputs, train_labels):
     :return: None
     """
     #TODO: Fill in
+    # print('train')
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
+
+    train_inputs1 = np.zeros((int(len(train_inputs)/model.window_size),model.window_size),dtype=np.int32)
+    train_labels1 = np.zeros((int(len(train_labels)/model.window_size),model.window_size),dtype=np.int32)
+    for i in range(int(len(train_inputs)/model.window_size/2)):
+        train_inputs1[i] = train_inputs[i*2*model.window_size:i*2*model.window_size+model.window_size]
+        train_labels1[i] = train_labels[i*2*model.window_size+model.window_size:i*2*model.window_size+2*model.window_size]
+    # train_inputs1 = np.reshape(train_inputs1,-1)
+    # train_labels1 = np.reshape(train_labels1,-1)
+
+    seeds=[s for s in range(len(train_labels1))]
+    index=tf.random.shuffle(seeds)
+    train_inputs2=tf.gather(train_inputs1,index,axis=0)
+    train_labels2=tf.gather(train_labels1,index,axis=0)
+
+    for i in range(int(len(train_inputs)/model.batch_size)):
+  # Implement backprop:
+        with tf.GradientTape() as tape:
+            probs,final_memory_state=model.call(train_inputs2[i*model.batch_size:(i+1)*model.batch_size],None)
+            # print('train probs',probs.shape)
+            losses=model.loss(probs,train_labels2[i*model.batch_size:(i+1)*model.batch_size])
+ 
+        gradients = tape.gradient(losses, model.trainable_variables)
+        # print(gradients)
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
     pass
 
@@ -86,7 +128,25 @@ def test(model, test_inputs, test_labels):
     
     #TODO: Fill in
     #NOTE: Ensure a correct perplexity formula (different from raw loss)
+    test_inputs1 = np.zeros((int(len(test_inputs)/model.window_size),model.window_size),dtype=np.int32)
+    test_labels1 = np.zeros((int(len(test_labels)/model.window_size),model.window_size),dtype=np.int32)
+    for i in range(int(len(test_inputs1)/model.window_size/2)):
+        test_inputs1[i] = test_inputs1[i*2*model.window_size:i*2*model.window_size+model.window_size]
+        test_labels1[i] = test_labels1[i*2*model.window_size+model.window_size:i*2*model.window_size+2*model.window_size]
+    test_inputs1 = np.reshape(test_inputs1,-1)
+    test_labels1 = np.reshape(test_labels1,-1)
 
+    sum = 0
+    for i in range(int(len(test_inputs1)/model.batch_size)):
+        with tf.GradientTape() as tape:
+            logits=model.call(test_inputs1[i*model.batch_size:(i+1)*model.batch_size],None)
+            losses=model.loss(logits,test_labels1[i*model.batch_size:(i+1)*model.batch_size])
+            sum += losses
+        
+    perplexity = tf.exp(sum/int(len(test_inputs1)/model.batch_size))
+        # print(gradients)
+
+    return perplexity
     pass  
 
 
@@ -139,6 +199,32 @@ def main():
     # Print out perplexity 
 
     # BONUS: Try printing out various sentences with different start words and sample_n parameters 
+    train1,test1,word2id = get_data('/Users/zccc/1470projects/data/train.txt','/Users/zccc/1470projects/data/test.txt')
+    # print(train1.shape) #(1465614,)
+    # print(test1.shape) #(361912,)
+
+    # TO-DO:  Separate your train and test data into inputs and labels
+    # train_input = np.zeros((int(len(train1)/3),2),dtype=np.int32)
+    # train_labels = np.zeros((int(len(train1)/3),),dtype=np.int32)
+    # for i in range(int(len(train1)/3)):
+    #     train_input[i] = train1[i*3:i*3+2]
+    #     train_labels[i] = train1[i*3+2]
+    # print(train_input.shape) #(488538, 2)
+
+    # test_input = np.zeros((int(len(test1)/3),2))
+    # test_labels = np.zeros((int(len(test1)/3),))
+    # for i in range(int(len(test1)/3)):
+    #     test_input[i] = test1[i*3:i*3+2]
+    #     test_labels[i] = test1[i*3+2]
+    # print(test_input.shape) #(120637, 2)
+    # TODO: initialize model
+    obj = Model(len(word2id))
+
+    # TODO: Set-up the training step
+    train(obj,train1,train1)
+    # TODO: Set up the testing steps
+    perplexity = test(obj,test1,test1)
+    print('perplexity is: ',perplexity)
     pass
 
 if __name__ == '__main__':

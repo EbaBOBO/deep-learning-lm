@@ -56,7 +56,7 @@ class Model(tf.keras.Model):
         :return: the loss of the model as a tensor of size 1
         """
         #TODO: Fill in
-
+        # print('labels',labels.shape)
         return tf.reduce_mean(tf.keras.metrics.sparse_categorical_crossentropy(labels, probs))
         # return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels, probs))
         pass
