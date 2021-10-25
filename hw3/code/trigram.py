@@ -9,7 +9,6 @@ class Model(tf.keras.Model):
     def __init__(self, vocab_size):
         """
         The Model class predicts the next words in a sequence.
-
         :param vocab_size: The number of unique words in the data
         """
 
@@ -18,11 +17,19 @@ class Model(tf.keras.Model):
         # TODO: initialize vocab_size, embedding_size
 
         self.vocab_size = vocab_size
-        self.embedding_size = _ #TODO
-        self.batch_size = _ #TODO
+        self.embedding_size = 30 #TODO
+        self.batch_size =  100 #TODO
 
         # TODO: initialize embeddings and forward pass weights (weights, biases)
-
+        self.E = tf.Variable(tf.random.truncated_normal([self.vocab_size,self.embedding_size], stddev=0.1))
+        # self.W = tf.Variable(tf.random.truncated_normal([self.embedding_size,self.vocab_size], stddev=0.1))
+        self.W1 = tf.Variable(tf.random.truncated_normal([self.embedding_size*2,100], stddev=0.1))
+        self.W2 = tf.Variable(tf.random.truncated_normal([100,1000], stddev=0.1))
+        self.W3 = tf.Variable(tf.random.truncated_normal([1000,self.vocab_size], stddev=0.1))
+        # self.b = tf.Variable(tf.random.truncated_normal([self.vocab_size], stddev=0.1))
+        self.b1 = tf.Variable(tf.random.truncated_normal([100], stddev=0.1))
+        self.b2 = tf.Variable(tf.random.truncated_normal([1000], stddev=0.1))
+        self.b3 = tf.Variable(tf.random.truncated_normal([self.vocab_size], stddev=0.1))
     def call(self, inputs):
         """
         You must use an embedding layer as the first layer of your network (i.e. tf.nn.embedding_lookup)
@@ -31,8 +38,15 @@ class Model(tf.keras.Model):
         """
 
         #TODO: Fill in
+        
+        embedding = tf.nn.embedding_lookup(self.E, inputs, max_norm=None, name=None)
+        embedding2 = tf.reshape(embedding,[self.batch_size,self.embedding_size*2])#[batchsize,60]
 
-        pass
+        logits1 = tf.add(tf.matmul(embedding2,self.W1),self.b1) # [batch_size,100]
+        logits2 = tf.add(tf.matmul(logits1,self.W2),self.b2)  #[batch_size,1000]
+        logits3 = tf.add(tf.matmul(logits2,self.W3),self.b3)    #[batch_size,vocab_size]
+        return logits3
+
 
     def loss_function(self, probs, labels):
         """
@@ -44,8 +58,8 @@ class Model(tf.keras.Model):
         :return: the loss of the model as a tensor of size 1
         """
         #TODO: Fill in
-
-        pass
+        return tf.reduce_mean(tf.keras.metrics.sparse_categorical_crossentropy(labels, probs, from_logits=True, axis=-1))
+        # return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels, probs))
 
 
 def train(model, train_input, train_labels):
@@ -62,7 +76,26 @@ def train(model, train_input, train_labels):
     
     #TODO Fill in
 
-    pass
+    print('train')
+    optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
+    seeds=[s for s in range(len(train_input))]
+    # train_labels = np.array
+
+    index=tf.random.shuffle(seeds)
+    train_inputs1=tf.gather(train_input,index,axis=0)
+    train_labels1=tf.gather(train_labels,index,axis=0)
+    # train_inputs2=tf.image.random_flip_left_right(train_inputs1, 6).numpy()
+    # loss1=[]
+    for i in range(int(len(train_input)/model.batch_size)):
+  # Implement backprop:
+        with tf.GradientTape() as tape:
+            logits=model.call(train_inputs1[i*model.batch_size:(i+1)*model.batch_size])
+            losses=model.loss_function(logits,train_labels1[i*model.batch_size:(i+1)*model.batch_size])
+            # loss1.append(losses)
+      
+        gradients = tape.gradient(losses, model.trainable_variables)
+        # print(gradients)
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
 
 def test(model, test_input, test_labels):
@@ -77,20 +110,31 @@ def test(model, test_input, test_labels):
     
     #TODO: Fill in
     #NOTE: Ensure a correct perplexity formula (different from raw loss)
+    # logits = model.call(test_input)
+    # accu = model.accuracy(logits,test_labels)
+    sum = 0
+    for i in range(int(len(test_input)/model.batch_size)):
+# Implement backprop:
+        with tf.GradientTape() as tape:
+            logits=model.call(test_input[i*model.batch_size:(i+1)*model.batch_size])
+            losses=model.loss_function(logits,test_labels[i*model.batch_size:(i+1)*model.batch_size])
+            sum += losses
+        
+    perplexity = tf.exp(sum/len(test_input))
+        # print(gradients)
 
-    pass  
+    return perplexity
+
 
 
 def generate_sentence(word1, word2, length, vocab, model):
     """
     Given initial 2 words, print out predicted sentence of targeted length.
-
     :param word1: string, first word
     :param word2: string, second word
     :param length: int, desired sentence length
     :param vocab: dictionary, word to id mapping
     :param model: trained trigram model
-
     """
 
     #NOTE: This is a deterministic, argmax sentence generation
@@ -110,18 +154,35 @@ def generate_sentence(word1, word2, length, vocab, model):
 
 def main():
     # TODO: Pre-process and vectorize the data using get_data from preprocess
+    train1,test1,word2id = get_data('/Users/zccc/1470projects/data/train.txt','/Users/zccc/1470projects/data/test.txt')
+    # print(train1.shape) #(1465614,)
+    # print(test1.shape) #(361912,)
 
     # TO-DO:  Separate your train and test data into inputs and labels
+    train_input = np.zeros((int(len(train1)/3),2),dtype=np.int32)
+    train_labels = np.zeros((int(len(train1)/3),),dtype=np.int32)
+    for i in range(int(len(train1)/3)):
+        train_input[i] = train1[i*3:i*3+2]
+        train_labels[i] = train1[i*3+2]
+    # print(train_input.shape) #(488538, 2)
 
+    test_input = np.zeros((int(len(test1)/3),2))
+    test_labels = np.zeros((int(len(test1)/3),))
+    for i in range(int(len(test1)/3)):
+        test_input[i] = test1[i*3:i*3+2]
+        test_labels[i] = test1[i*3+2]
+    # print(test_input.shape) #(120637, 2)
     # TODO: initialize model
+    obj = Model(len(word2id))
 
     # TODO: Set-up the training step
-
+    train(obj,train_input,train_labels)
     # TODO: Set up the testing steps
-
+    perplexity = test(obj,test_input,test_labels)
+    print('perplexity is: ',perplexity)
     # Print out perplexity 
     
     # BONUS: Try printing out sentences with different starting words  
-
+    # pass
 if __name__ == '__main__':
     main()

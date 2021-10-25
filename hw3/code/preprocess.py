@@ -14,15 +14,38 @@ def get_data(train_file, test_file):
     :return: Tuple of train (1-d list or array with training words in vectorized/id form), test (1-d list or array with testing words in vectorized/id form), vocabulary (Dict containg index->word mapping)
     """
     # TODO: load and concatenate training data from training file.
+    with open(train_file, "r") as f1:  
+        data1 = f1.readlines() 
+        vocab1 = set("".join(data1).split()) # collects all unique words in our dataset (vocab)
+        word2id = {w: i for i, w in enumerate(list(vocab1))} # maps each word in our vocab to a unique index (label encode)
+        # print(word2id)
+        s1 = map(lambda x: x.split(), data1)
+        train = []
+        for sentence in s1:
+            for word_index, word in enumerate(sentence):  
+                train.append(word2id[word])
+        # Split sentences into words
 
+ 
     # TODO: load and concatenate testing data from testing file.
-
+    with open(test_file, "r") as f2:  
+        data2 = f2.readlines() 
     # TODO: read in and tokenize training data
+
+        s2 = map(lambda x: x.split(), data2)
+        test = []
+        for sentence in s2:
+            for word_index, word in enumerate(sentence):  
+                test.append(word2id[word])
 
     # TODO: read in and tokenize testing data
 
     # BONUS: Ensure that all words appearing in test also appear in train
 
     # TODO: return tuple of training tokens, testing tokens, and the vocab dictionary.
+    train = np.array(train)
+    test = np.array(test)
 
-    pass
+    return train,test,word2id
+
+# get_data('/Users/zccc/1470projects/data/train.txt','/Users/zccc/1470projects/data/test.txt')
