@@ -26,9 +26,10 @@ class Model(tf.keras.Model):
         # - use tf.keras.layers.Dense for feed forward layers: https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dense
         # - and use tf.keras.layers.GRU or tf.keras.layers.LSTM for your RNN 
         self.E = tf.Variable(tf.random.truncated_normal([self.vocab_size,self.embedding_size], stddev=0.1))
-        self.LSTM = tf.keras.layers.LSTM(100,return_sequences=True, return_state=True)
-        self.dense_layer1 = tf.keras.layers.Dense(100)
-        self.dense_layer2 = tf.keras.layers.Dense(1000)
+        self.LSTM = tf.keras.layers.LSTM(50,return_sequences=True, return_state=True)
+        # self.LSTM2 = tf.keras.layers.LSTM(100,return_sequences=True, return_state=True)
+        self.dense_layer1 = tf.keras.layers.Dense(800)
+        self.dense_layer2 = tf.keras.layers.Dense(1200)
         self.dense_layer3 = tf.keras.layers.Dense(self.vocab_size)
     def call(self, inputs, initial_state):
         """
@@ -46,6 +47,7 @@ class Model(tf.keras.Model):
         # print(inputs.shape)
         embedding = tf.nn.embedding_lookup(self.E, inputs, max_norm=None, name=None)
         output1, final_memory_state, final_carry_state = self.LSTM(embedding)
+        # output2, final_memory_state2, final_carry_state2 = self.LSTM2(output1)
         logits1 = self.dense_layer1(output1)
         logits2 = self.dense_layer2(logits1)
         logits3 = self.dense_layer3(logits2)
