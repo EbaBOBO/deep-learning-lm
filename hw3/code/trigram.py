@@ -22,11 +22,9 @@ class Model(tf.keras.Model):
 
         # TODO: initialize embeddings and forward pass weights (weights, biases)
         self.E = tf.Variable(tf.random.truncated_normal([self.vocab_size,self.embedding_size], stddev=0.1))
-        # self.W = tf.Variable(tf.random.truncated_normal([self.embedding_size,self.vocab_size], stddev=0.1))
         self.W1 = tf.Variable(tf.random.truncated_normal([self.embedding_size*2,100], stddev=0.1))
         self.W2 = tf.Variable(tf.random.truncated_normal([100,1000], stddev=0.1))
         self.W3 = tf.Variable(tf.random.truncated_normal([1000,self.vocab_size], stddev=0.1))
-        # self.b = tf.Variable(tf.random.truncated_normal([self.vocab_size], stddev=0.1))
         self.b1 = tf.Variable(tf.random.truncated_normal([100], stddev=0.1))
         self.b2 = tf.Variable(tf.random.truncated_normal([1000], stddev=0.1))
         self.b3 = tf.Variable(tf.random.truncated_normal([self.vocab_size], stddev=0.1))
@@ -113,13 +111,12 @@ def test(model, test_input, test_labels):
     #NOTE: Ensure a correct perplexity formula (different from raw loss)
     sum = 0
     for i in range(int(len(test_input)/model.batch_size)):
-# Implement backprop:
         with tf.GradientTape() as tape:
             logits=model.call(test_input[i*model.batch_size:(i+1)*model.batch_size])
             losses=model.loss_function(logits,test_labels[i*model.batch_size:(i+1)*model.batch_size])
             sum += losses
         
-    perplexity = tf.exp(sum/len(test_input))
+    perplexity = tf.exp(sum/int(len(test_input)/model.batch_size))
         # print(gradients)
 
     return perplexity
