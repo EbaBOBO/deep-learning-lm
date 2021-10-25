@@ -44,7 +44,8 @@ class Model(tf.keras.Model):
         logits1 = tf.add(tf.matmul(embedding2,self.W1),self.b1) # [batch_size,100]
         logits2 = tf.add(tf.matmul(logits1,self.W2),self.b2)  #[batch_size,1000]
         logits3 = tf.add(tf.matmul(logits2,self.W3),self.b3)    #[batch_size,vocab_size]
-        return logits3
+        logits = tf.nn.softmax(logits3)
+        return logits
         pass
 
     def loss_function(self, probs, labels):
