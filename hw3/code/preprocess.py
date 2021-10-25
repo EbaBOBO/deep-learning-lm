@@ -24,9 +24,6 @@ def get_data(train_file, test_file):
         for sentence in s1:
             for word_index, word in enumerate(sentence):  
                 train.append(word2id[word])
-        # Split sentences into words
-
- 
     # TODO: load and concatenate testing data from testing file.
     with open(test_file, "r") as f2:  
         data2 = f2.readlines() 
@@ -37,6 +34,8 @@ def get_data(train_file, test_file):
         for sentence in s2:
             for word_index, word in enumerate(sentence):  
                 test.append(word2id[word])
+
+    # TODO: read in and tokenize training data
 
     # TODO: read in and tokenize testing data
 
@@ -49,3 +48,4 @@ def get_data(train_file, test_file):
     return train,test,word2id
 
 # get_data('/Users/zccc/1470projects/data/train.txt','/Users/zccc/1470projects/data/test.txt')
+

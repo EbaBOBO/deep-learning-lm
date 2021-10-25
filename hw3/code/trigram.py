@@ -9,6 +9,7 @@ class Model(tf.keras.Model):
     def __init__(self, vocab_size):
         """
         The Model class predicts the next words in a sequence.
+
         :param vocab_size: The number of unique words in the data
         """
 
@@ -38,7 +39,6 @@ class Model(tf.keras.Model):
         """
 
         #TODO: Fill in
-        
         embedding = tf.nn.embedding_lookup(self.E, inputs, max_norm=None, name=None)
         embedding2 = tf.reshape(embedding,[self.batch_size,self.embedding_size*2])#[batchsize,60]
 
@@ -46,7 +46,6 @@ class Model(tf.keras.Model):
         logits2 = tf.add(tf.matmul(logits1,self.W2),self.b2)  #[batch_size,1000]
         logits3 = tf.add(tf.matmul(logits2,self.W3),self.b3)    #[batch_size,vocab_size]
         return logits3
-
 
     def loss_function(self, probs, labels):
         """
@@ -58,8 +57,10 @@ class Model(tf.keras.Model):
         :return: the loss of the model as a tensor of size 1
         """
         #TODO: Fill in
+
         return tf.reduce_mean(tf.keras.metrics.sparse_categorical_crossentropy(labels, probs, from_logits=True, axis=-1))
         # return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels, probs))
+
 
 
 def train(model, train_input, train_labels):
@@ -75,8 +76,6 @@ def train(model, train_input, train_labels):
     """
     
     #TODO Fill in
-
-    print('train')
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
     seeds=[s for s in range(len(train_input))]
     # train_labels = np.array
@@ -96,6 +95,7 @@ def train(model, train_input, train_labels):
         gradients = tape.gradient(losses, model.trainable_variables)
         # print(gradients)
         optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+
 
 
 def test(model, test_input, test_labels):
@@ -126,15 +126,16 @@ def test(model, test_input, test_labels):
     return perplexity
 
 
-
 def generate_sentence(word1, word2, length, vocab, model):
     """
     Given initial 2 words, print out predicted sentence of targeted length.
+
     :param word1: string, first word
     :param word2: string, second word
     :param length: int, desired sentence length
     :param vocab: dictionary, word to id mapping
     :param model: trained trigram model
+
     """
 
     #NOTE: This is a deterministic, argmax sentence generation
