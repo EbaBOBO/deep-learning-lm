@@ -27,8 +27,8 @@ class Model(tf.keras.Model):
         # - and use tf.keras.layers.GRU or tf.keras.layers.LSTM for your RNN 
         self.E = tf.Variable(tf.random.truncated_normal([self.vocab_size,self.embedding_size], stddev=0.1))
         self.LSTM = tf.keras.layers.LSTM(100,return_sequences=True, return_state=True)
-        self.dense_layer1 = tf.keras.layers.Dense(100)
-        self.dense_layer2 = tf.keras.layers.Dense(1000)
+        self.dense_layer1 = tf.keras.layers.Dense(1000)
+        self.dense_layer2 = tf.keras.layers.Dense(2000)
         self.dense_layer3 = tf.keras.layers.Dense(self.vocab_size)
     def call(self, inputs, initial_state):
         """
@@ -50,7 +50,7 @@ class Model(tf.keras.Model):
         logits2 = self.dense_layer2(logits1)
         logits3 = self.dense_layer3(logits2)
         probs = tf.nn.softmax(logits3)
-        print('probs',probs.shape)
+        # print('probs',probs.shape)
 
         return probs,final_memory_state
 
@@ -85,12 +85,14 @@ def train(model, train_inputs, train_labels):
     :param train_labels: train labels (all labels for training) of shape (num_labels,)
     :return: None
     """
-    #TODO: Fill in
-    # print('train')
+#     #TODO: Fill in
+    print('train')
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
-    train_inputs1 = np.zeros((int(len(train_inputs)/model.window_size),model.window_size),dtype=np.int32)
-    train_labels1 = np.zeros((int(len(train_labels)/model.window_size),model.window_size),dtype=np.int32)
+    train_inputs1 = np.zeros((int(len(train_inputs)/model.window_size/2),model.window_size),dtype=np.int32)
+    train_labels1 = np.zeros((int(len(train_labels)/model.window_size/2),model.window_size),dtype=np.int32)
+    print(train_inputs1.shape)
+    print('train_inputs',train_inputs.shape)
     for i in range(int(len(train_inputs)/model.window_size/2)):
         train_inputs1[i] = train_inputs[i*2*model.window_size:i*2*model.window_size+model.window_size]
         train_labels1[i] = train_labels[i*2*model.window_size+model.window_size:i*2*model.window_size+2*model.window_size]
@@ -128,23 +130,28 @@ def test(model, test_inputs, test_labels):
     
     #TODO: Fill in
     #NOTE: Ensure a correct perplexity formula (different from raw loss)
-    test_inputs1 = np.zeros((int(len(test_inputs)/model.window_size),model.window_size),dtype=np.int32)
-    test_labels1 = np.zeros((int(len(test_labels)/model.window_size),model.window_size),dtype=np.int32)
-    for i in range(int(len(test_inputs1)/model.window_size/2)):
-        test_inputs1[i] = test_inputs1[i*2*model.window_size:i*2*model.window_size+model.window_size]
-        test_labels1[i] = test_labels1[i*2*model.window_size+model.window_size:i*2*model.window_size+2*model.window_size]
+    test_inputs1 = np.zeros((int(len(test_inputs)/model.window_size/2),model.window_size),dtype=np.int32)
+    # print(test_inputs1.shape)
+    # print('test_inputs',test_inputs.shape)
+    # print(test_inputs1[1*2*model.window_size:1*2*model.window_size+model.window_size].shape)
+    # print(int(len(test_inputs1)/model.window_size/2))
+    test_labels1 = np.zeros((int(len(test_labels)/model.window_size/2),model.window_size),dtype=np.int32)
+    for i in range(int(len(test_inputs)/model.window_size/2)):
+        test_inputs1[i] = test_inputs[i*2*model.window_size:i*2*model.window_size+model.window_size]
+        test_labels1[i] = test_labels[i*2*model.window_size+model.window_size:i*2*model.window_size+2*model.window_size]
     # test_inputs1 = np.reshape(test_inputs1,-1)
     # test_labels1 = np.reshape(test_labels1,-1)
 
     sum = 0
-    for i in range(int(len(test_inputs1)/model.batch_size)):
+    for i in range(int(len(test_inputs)/model.batch_size)):
+        print(i)
         with tf.GradientTape() as tape:
             logits,final_memory_state = model.call(test_inputs1[i*model.batch_size:(i+1)*model.batch_size],None)
             losses=model.loss(logits,test_labels1[i*model.batch_size:(i+1)*model.batch_size])
             sum += losses
         
-    perplexity = tf.exp(sum/int(len(test_inputs1)/model.batch_size))
-        # print(gradients)
+    perplexity = tf.exp(sum/int(len(test_inputs)/model.batch_size))
+    # print(perplexity.shape)
 
     return perplexity
     pass  
